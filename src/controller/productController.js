@@ -24,6 +24,26 @@ const getProducts = asyncHandle(async (req, res) => {
     data: products,
   });
 });
+const getBestSeller = asyncHandle(async (req, res) => {
+  const products = await ProductModel.find({});
+  const sortedProducts = products.sort((a, b) => b.sold - a.sold);
+
+  const bestSellers = sortedProducts.slice(0, 1);
+
+  res.status(200).json({
+    message: "get best seller ok",
+    data: bestSellers,
+  });
+});
+const getProductDiscount = asyncHandle(async (req, res) => {
+  const products = await ProductModel.find({});
+  const items = products.filter((element) => element.discount > 0);
+
+  res.status(200).json({
+    message: "get product discount ok",
+    data: items,
+  });
+});
 const searchProducts = asyncHandle(async (req, res) => {
   const { title } = req.query;
 
@@ -34,17 +54,37 @@ const searchProducts = asyncHandle(async (req, res) => {
   );
 
   res.status(200).json({
-    message: "get events ok",
+    message: "get products ok",
     data: items,
   });
 });
-const getProductsByCategoyId = asyncHandle(async (req, res) => {
+const getProductsByCategoryId = asyncHandle(async (req, res) => {
   const { id } = req.query;
 
   const items = await ProductModel.find({ categories: { $all: id } });
 
   res.status(200).json({
     message: "get Product by categories successfully!!!",
+    data: items,
+  });
+});
+const getProductsBySubCategory = asyncHandle(async (req, res) => {
+  const { id } = req.query;
+
+  const items = await ProductModel.find({ subCategories: { $all: id } });
+
+  res.status(200).json({
+    message: "get Product by sub categories successfully!!!",
+    data: items,
+  });
+});
+const getProductsBySubSubCategory = asyncHandle(async (req, res) => {
+  const { id } = req.query;
+
+  const items = await ProductModel.find({ subSubCategories: { $all: id } });
+
+  res.status(200).json({
+    message: "get Product by sub sub categories successfully!!!",
     data: items,
   });
 });
@@ -73,5 +113,9 @@ module.exports = {
   addNewProduct,
   getProducts,
   searchProducts,
-  getProductsByCategoyId,
+  getProductsByCategoryId,
+  getProductsBySubCategory,
+  getProductsBySubSubCategory,
+  getBestSeller,
+  getProductDiscount,
 };
