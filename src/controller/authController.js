@@ -131,6 +131,7 @@ const register = asyncHandle(async (req, res) => {
 });
 const login = asyncHandle(async (req, res) => {
   const { email, password } = req.body;
+  console.log(req.body);
   const existingUser = await UserModel.findOne({ email });
   if (!existingUser) {
     res.status(403).json({
@@ -144,12 +145,11 @@ const login = asyncHandle(async (req, res) => {
     throw new Error("Email or Password is not correct");
   }
   res.status(200).json({
-    message: "Login succesfully",
-    data: {
-      id: existingUser.id,
-      email: existingUser.email,
-      accesstoken: await getJsonWebToken(email, existingUser.id),
-    },
+    id: existingUser.id,
+    name: existingUser.fullname,
+    email: existingUser.email,
+    password: existingUser.password,
+    accesstoken: await getJsonWebToken(email, existingUser.id),
   });
 });
 module.exports = {
