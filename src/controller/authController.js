@@ -49,7 +49,6 @@ const verification = asyncHandle(async (req, res) => {
     await handleSendMail(data);
 
     res.status(200).json({
-      message: "Send verification code successfully!!!",
       data: {
         code: verificationCode,
       },
@@ -120,12 +119,11 @@ const register = asyncHandle(async (req, res) => {
   });
   await newUser.save();
   res.status(200).json({
-    message: "Register new user succesfully",
-    data: {
-      email: newUser.email,
-      id: newUser.id,
-      accesstoken: await getJsonWebToken(email, newUser.id),
-    },
+    id: newUser.id,
+    name: newUser.fullname,
+    email: newUser.email,
+    password: newUser.password,
+    accesstoken: await getJsonWebToken(email, newUser.id),
   });
   console.log(hashedPassword);
 });

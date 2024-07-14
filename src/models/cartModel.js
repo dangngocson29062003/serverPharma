@@ -2,10 +2,7 @@ const { default: mongoose } = require("mongoose");
 const ProductModel = require("./productModel");
 
 const CartSchema = new mongoose.Schema({
-  fullname: {
-    type: String,
-  },
-  email: {
+  idUser: {
     type: String,
     require: true,
   },
