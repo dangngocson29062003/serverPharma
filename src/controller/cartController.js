@@ -5,10 +5,12 @@ const ProductModel = require("../models/productModel");
 const GetCartByID = asyncHandle(async (req, res) => {
   const { id } = req.query;
   console.log(id);
-  const cart = await CartModel.find({ idUser: { $all: id } });
+  const cart = await CartModel.findOne({ idUser: { $all: id } });
 
   res.status(200).json({
-    data: cart,
+    idUser: cart.idUser,
+    products: cart.products,
+    total: cart.total,
   });
 });
 const PutItemToCart = asyncHandle(async (req, res) => {
@@ -23,7 +25,6 @@ const PutItemToCart = asyncHandle(async (req, res) => {
   } else {
     total = products.quantity * product.price;
   }
-  console.log(total);
   if (!cart) {
     const newCart = new CartModel({
       idUser: idUser,
@@ -84,7 +85,9 @@ const PutItemToCart = asyncHandle(async (req, res) => {
   await cart.save();
 
   res.status(200).json({
-    data: cart,
+    idUser: cart.idUser,
+    products: cart.products,
+    total: cart.total,
   });
 });
 module.exports = {
