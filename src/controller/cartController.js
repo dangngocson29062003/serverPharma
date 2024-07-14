@@ -38,7 +38,6 @@ const PutItemToCart = asyncHandle(async (req, res) => {
   const existingProduct = cart.products.filter((item) => {
     return item.productId.toString() === products.productId.toString();
   });
-  console.log(products.quantity);
   if (existingProduct.length > 0) {
     const oldQuantity = existingProduct[0].quantity;
     const newQuantity = products.quantity;

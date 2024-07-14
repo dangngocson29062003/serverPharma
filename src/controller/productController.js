@@ -24,6 +24,14 @@ const getProducts = asyncHandle(async (req, res) => {
     data: products,
   });
 });
+const getProductById = asyncHandle(async (req, res) => {
+  const { id } = req.query;
+  const products = await ProductModel.findById({ _id: id });
+
+  res.status(200).json({
+    data: products,
+  });
+});
 const getBestSeller = asyncHandle(async (req, res) => {
   const products = await ProductModel.find({});
   const sortedProducts = products.sort((a, b) => b.sold - a.sold);
@@ -112,6 +120,7 @@ module.exports = {
   getCategories,
   addNewProduct,
   getProducts,
+  getProductById,
   searchProducts,
   getProductsByCategoryId,
   getProductsBySubCategory,
