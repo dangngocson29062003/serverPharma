@@ -23,7 +23,7 @@ const PutItemToCart = asyncHandle(async (req, res) => {
   } else {
     total = products.quantity * product.price;
   }
-
+  console.log(total);
   if (!cart) {
     const newCart = new CartModel({
       idUser: idUser,
@@ -34,18 +34,53 @@ const PutItemToCart = asyncHandle(async (req, res) => {
     return res.status(200).json({ data: newCart });
   }
 
-  const existingProduct = cart.products.find(
-    (item) => item.productId === products.productId
-  );
-  console.log(existingProduct);
-  if (existingProduct) {
-    existingProduct.quantity = product.quantity;
-    cart.total = cart.total - existingProduct.quantity * product.price + total;
+  const existingProduct = cart.products.filter((item) => {
+    return item.productId.toString() === products.productId.toString();
+  });
+  console.log(products.quantity);
+  if (existingProduct.length > 0) {
+    const oldQuantity = existingProduct[0].quantity;
+    const newQuantity = products.quantity;
+    let oldTotal;
+    if (product.discount > 0) {
+      oldTotal =
+        oldQuantity *
+        (product.price - (product.price * product.discount) / 100);
+    } else {
+      oldTotal = oldQuantity * product.price;
+    }
+    let newTotal;
+    if (product.discount > 0) {
+      newTotal =
+        newQuantity *
+        (product.price - (product.price * product.discount) / 100);
+    } else {
+      newTotal = newQuantity * product.price;
+    }
+    if (newQuantity > oldQuantity) {
+      cart.total = cart.total + (newTotal - oldTotal);
+    } else if (newQuantity === 0) {
+      // Xóa sản phẩm khỏi giỏ hàng nếu số lượng bằng 0
+      cart.products = cart.products.filter((item) => {
+        return item.productId.toString() !== products.productId.toString();
+      });
+      cart.total = cart.total - oldTotal;
+    } else {
+      cart.total = cart.total - (oldTotal - newTotal);
+    }
+    cart.products = cart.products.map((item) => {
+      if (item.productId.toString() === products.productId.toString()) {
+        return {
+          ...item,
+          quantity: products.quantity,
+        };
+      }
+      return item;
+    });
   } else {
     cart.products.push(products);
     cart.total += total;
   }
-  console.log(cart);
   await cart.save();
 
   res.status(200).json({
