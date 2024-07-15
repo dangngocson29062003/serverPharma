@@ -1,6 +1,7 @@
 const CartModel = require("../models/cartModel");
 const asyncHandle = require("express-async-handler");
 const ProductModel = require("../models/productModel");
+const VoucherModel = require("../models/voucherModel");
 
 const GetCartByID = asyncHandle(async (req, res) => {
   const { id } = req.query;
@@ -11,6 +12,8 @@ const GetCartByID = asyncHandle(async (req, res) => {
     idUser: cart.idUser,
     products: cart.products,
     total: cart.total,
+    voucher: cart.voucher,
+    discountAmount: cart.discountAmount,
   });
 });
 const PutItemToCart = asyncHandle(async (req, res) => {
@@ -89,7 +92,81 @@ const PutItemToCart = asyncHandle(async (req, res) => {
     total: cart.total,
   });
 });
+const ApplyVoucher = async (req, res) => {
+  try {
+    const { idUser } = req.query;
+    const { voucherCode } = req.body;
+    console.log(voucherCode);
+    // Lấy thông tin của voucher
+    const voucher = await VoucherModel.findOne({
+      code: voucherCode,
+    });
+    if (!voucher) {
+      return res.status(404).json({ message: "Voucher không tồn tại" });
+    }
+    // Lấy thông tin của giỏ hàng
+    const cart = await CartModel.findOne({ idUser: idUser });
+    if (!cart) {
+      return res.status(404).json({ message: "Giỏ hàng không tồn tại" });
+    }
+
+    // Kiểm tra điều kiện áp dụng voucher
+    const { total } = cart;
+    if (total < voucher.minOrderAmount) {
+      return res
+        .status(400)
+        .json({ message: "Giá trị đơn hàng không đủ để áp dụng voucher" });
+    }
+
+    // Áp dụng voucher vào giỏ hàng
+    let discountAmount;
+    if (voucher.discountPercentage > 0) {
+      discountAmount = total * (voucher.discountPercentage / 100);
+    } else {
+      discountAmount = voucher.discountAmount;
+    }
+    cart.discountAmount = total - discountAmount;
+    cart.voucher = voucher._id;
+
+    await cart.save();
+
+    return res.json(cart);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Lỗi khi áp dụng voucher" });
+  }
+};
+const RemoveVoucher = async (req, res) => {
+  try {
+    const { idUser } = req.query;
+
+    // Lấy thông tin của voucher
+
+    // Lấy thông tin của giỏ hàng
+    const cart = await CartModel.findOneAndUpdate({ idUser: idUser });
+    if (!cart) {
+      return res.status(404).json({ message: "Giỏ hàng không tồn tại" });
+    }
+
+    const voucher = await VoucherModel.findById(cart.voucher);
+    if (!voucher) {
+      return res.status(404).json({ message: "Voucher không tồn tại" });
+    }
+
+    cart.discountAmount = 0;
+    cart.voucher = "";
+
+    await cart.save();
+
+    return res.json(cart);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Lỗi khi áp dụng voucher" });
+  }
+};
 module.exports = {
   GetCartByID,
   PutItemToCart,
+  ApplyVoucher,
+  RemoveVoucher,
 };

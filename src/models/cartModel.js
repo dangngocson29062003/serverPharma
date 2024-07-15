@@ -17,6 +17,14 @@ const CartSchema = new mongoose.Schema({
   total: {
     type: Number,
   },
+  discountAmount: {
+    type: Number,
+    default: 0,
+  },
+  voucher: {
+    type: String,
+    default: "",
+  },
   createAt: {
     type: Date,
     default: Date.now(),
