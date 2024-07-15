@@ -78,7 +78,6 @@ const forgotPassword = asyncHandle(async (req, res) => {
 
     await UserModel.findByIdAndUpdate(user._id, {
       password: hashedPassword,
-      isChangePassword: true,
     })
       .then(() => {
         console.log("Done");
@@ -147,11 +146,78 @@ const login = asyncHandle(async (req, res) => {
     name: existingUser.fullname,
     email: existingUser.email,
     password: existingUser.password,
+    gender: existingUser.gender,
+    birthDay: existingUser.birthDay,
+    phone: existingUser.address,
+    city: existingUser.city,
+    district: existingUser.district,
+    ward: existingUser.ward,
+    address: existingUser.address,
     accesstoken: await getJsonWebToken(email, existingUser.id),
+  });
+});
+const updateUser = asyncHandle(async (req, res) => {
+  const { userId } = req.query;
+  const {
+    fullname,
+    email,
+    password,
+    gender,
+    birthDay,
+    city,
+    ward,
+    district,
+    address,
+    phone,
+  } = req.body;
+
+  // Find the existing user
+  const existingUser = await UserModel.findById(userId);
+
+  if (!existingUser) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  // Update the user's information
+  existingUser.fullname = fullname || existingUser.fullname;
+  existingUser.email = email || existingUser.email;
+  existingUser.gender = gender || existingUser.gender;
+  existingUser.birthDay = birthDay || existingUser.birthDay;
+  existingUser.address = address || existingUser.address;
+  existingUser.phone = phone || existingUser.phone;
+  existingUser.city = city || existingUser.city;
+  existingUser.district = district || existingUser.district;
+  existingUser.ward = ward || existingUser.ward;
+  existingUser.address = address || existingUser.address;
+  // Hash the new password
+  if (password) {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    existingUser.password = hashedPassword;
+  }
+
+  // Save the updated user
+  await existingUser.save();
+
+  // Generate a new access token
+  const accessToken = await getJsonWebToken(email, existingUser.id);
+
+  res.status(200).json({
+    id: existingUser.id,
+    name: existingUser.fullname,
+    email: existingUser.email,
+    gender: existingUser.gender,
+    birthDay: existingUser.birthDay,
+    phone: existingUser.phone,
+    city: existingUser.city,
+    district: existingUser.district,
+    ward: existingUser.ward,
+    address: existingUser.address,
+    accessToken,
   });
 });
 module.exports = {
   register,
   login,
   verification,
+  updateUser,
 };

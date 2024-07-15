@@ -8,9 +8,37 @@ const UserSchema = new mongoose.Schema({
     type: String,
     require: true,
   },
+  phone: {
+    type: String,
+    default: "",
+  },
   password: {
     type: String,
     require: true,
+  },
+  birthDay: {
+    type: Date,
+    default: Date.now(),
+  },
+  gender: {
+    type: String,
+    default: "",
+  },
+  city: {
+    type: String,
+    default: "",
+  },
+  district: {
+    type: String,
+    default: "",
+  },
+  ward: {
+    type: String,
+    default: "",
+  },
+  address: {
+    type: String,
+    default: "",
   },
   createAt: {
     type: Date,
