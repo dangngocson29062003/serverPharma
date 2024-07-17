@@ -161,6 +161,7 @@ const updateUser = asyncHandle(async (req, res) => {
   const {
     fullname,
     email,
+    oldPassword,
     password,
     gender,
     birthDay,
@@ -189,11 +190,18 @@ const updateUser = asyncHandle(async (req, res) => {
   existingUser.district = district || existingUser.district;
   existingUser.ward = ward || existingUser.ward;
   existingUser.address = address || existingUser.address;
+  const isMatchPassword = await bcrypt.compare(oldPassword, existingUser.password);
+
   // Hash the new password
-  if (password) {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    existingUser.password = hashedPassword;
+  if(password){
+    if (isMatchPassword) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      existingUser.password = hashedPassword;
+    }else{
+      return res.status(404).json({ message: "Password not incorrect" });
+    }
   }
+
 
   // Save the updated user
   await existingUser.save();
